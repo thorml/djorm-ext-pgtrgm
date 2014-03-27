@@ -1,3 +1,7 @@
+# Python3 compatibility
+if not reduce:
+    from functools import reduce
+
 from django.db import backend
 from django.db import connection
 from django.db import models
