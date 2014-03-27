@@ -9,6 +9,7 @@ from django.db.models.fields import Field, subclassing
 from django.db.models.query import QuerySet
 from django.db.models.sql.constants import QUERY_TERMS
 from django.contrib.gis.db.models.sql.query import ALL_TERMS
+from psycopg2.extensions import adapt
 
 db_backends_allowed = ('postgresql', 'postgis')
 
@@ -75,11 +76,13 @@ class SimilarQuerySet(QuerySet):
 
     def filter_o(self, **kwargs):
         qs = super(SimilarQuerySet, self).filter(**kwargs)
+
         for lookup, query in kwargs.items():
             if lookup.endswith('__similar'):
                 field = lookup.replace('__similar', '')
-                select = {'%s_distance' % field: "similarity(%s, '%s')" % (field, query)}
+                select = {'%s_distance' % field: "similarity(%s, %s)" % (field, adapt(query))}
                 qs = qs.extra(select=select).order_by('-%s_distance' % field)
+
         return qs
 
 
