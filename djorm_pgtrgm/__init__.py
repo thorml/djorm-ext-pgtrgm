@@ -1,5 +1,5 @@
 # Python3 compatibility
-if not reduce:
+if 'reduce' not in dir(__builtins__):
     from functools import reduce
 
 from django.db import backend
