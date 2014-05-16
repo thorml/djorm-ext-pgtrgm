@@ -92,14 +92,19 @@ class SimilarQuerySet(QuerySet):
 
     def filter_o(self, **kwargs):
         qs = super(SimilarQuerySet, self).filter(**kwargs)
-	
+
         for lookup, query in kwargs.items():
             if isinstance(query, str):
                 query = query.replace('%', '%%')
+
             if lookup.endswith('__similar'):
                 field = lookup.replace('__similar', '')
-                select = {'%s_distance' % field: "similarity(%s, %s)" % (field, adapt(query))}
-                qs = qs.extra(select=select).order_by('-%s_distance' % field)
+                select = {
+                    '{}_distance'.format(field): (
+                        "similarity({}, %s)".format(field))
+                }
+                qs = (qs.extra(select=select, select_params=[query])
+                        .order_by('-%s_distance' % field))
 
         return qs
 
